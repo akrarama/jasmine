@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Жасмин</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap">
+<style>
+:root{
+  --bg:#ffe9ec; --ink:#4a0d1c;
+  --R:#e0182d; --D:#8f0f22; --H:#ff7a88; --Y:#ffd23f; --O:#ff9f1c; --G:#2f8f4e; --L:#5fcf6f;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#1b1033; --ink:#fff1f3; }
+}
+:root[data-theme="dark"]{ --bg:#1b1033; --ink:#fff1f3; }
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;
+  background:var(--bg);color:var(--ink);
+  font-family:"Press Start 2P",ui-monospace,Menlo,Consolas,monospace;overflow:hidden;
+}
+svg{shape-rendering:crispEdges;display:block}
+#flower{width:min(62vw,300px);max-height:56vh;height:auto}
+#heart{width:44px;height:auto;animation:beat 1s steps(2) infinite}
+.px{transform-box:fill-box;transform-origin:center;transform:scale(0);animation:pop .35s steps(4) var(--d) forwards}
+p{margin:0 1.2rem;text-align:center;font-size:clamp(.85rem,4vw,1.4rem);line-height:1.7;min-height:3.4em}
+.cur{display:inline-block;width:.6em;height:1em;background:var(--ink);vertical-align:-.12em;margin-left:.15em;animation:blink 1s steps(2) infinite}
+@keyframes pop{70%{transform:scale(1.3)}100%{transform:scale(1)}}
+@keyframes blink{50%{opacity:0}}
+@keyframes beat{50%{transform:scale(1.2)}}
+@media (prefers-reduced-motion: reduce){
+  .px{animation:none;transform:scale(1)} #heart,.cur{animation:none}
+}
+</style>
+</head>
+<body>
+<svg id="flower" viewBox="0 0 17 24" role="img" aria-label="Красный цветок в стиле пиксель-арт"></svg>
+<p id="msg" aria-live="polite"></p>
+<svg id="heart" viewBox="0 0 7 6" role="img" aria-label="Сердце"></svg>
+
+<script>
+// R красный, D тёмно-красный, H светлый, Y/O центр, G стебель, L листья
+var FLOWER = [
+"......DDDDD......",
+"...DDDRRRRRDDD...",
+"..DRRRRHHHRRRRD..",
+".DRRRRRHHHRRRRRD.",
+".DRRRRRRRRRRRRRD.",
+"DDRRRRRYYYRRRRRDD",
+"DRRRRRYYYYYRRRRRD",
+"DRRRRRYYOYYRRRRRD",
+"DRRRRRYYYYYRRRRRD",
+"DDRRRRRYYYRRRRRDD",
+".DRRRRRRRRRRRRRD.",
+"..DRRRRRRRRRRRD..",
+"...DDRRRRRRRDD...",
+".....DDDDDDD.....",
+"........G........",
+"........G........",
+"........G........",
+"....LLL.G........",
+"...LLLLLG........",
+"........G........",
+"........GLLL.....",
+"........GLLLLL...",
+"........G........",
+"........G........"
+];
+var HEART = [".RR.RR.","RRRRRRR","RRRRRRR",".RRRRR.","..RRR..","...R..."];
+
+function draw(svg, rows, delayFn){
+  var NS = "http://www.w3.org/2000/svg", out = "";
+  rows.forEach(function(row, y){
+    for (var x = 0; x < row.length; x++){
+      var c = row[x];
+      if (c === ".") continue;
+      var r = document.createElementNS(NS, "rect");
+      r.setAttribute("x", x); r.setAttribute("y", y);
+      r.setAttribute("width", 1); r.setAttribute("height", 1);
+      r.setAttribute("fill", "var(--" + c + ")");
+      r.setAttribute("class", "px");
+      r.style.setProperty("--d", delayFn(x, y, c).toFixed(2) + "s");
+      svg.appendChild(r);
+    }
+  });
+}
+
+// стебель растёт снизу вверх, потом цветок раскрывается от центра
+draw(document.getElementById("flower"), FLOWER, function(x, y, c){
+  if (y >= 14) return (23 - y) * 0.07 + (c === "L" ? 0.3 : 0);
+  return 1.2 + Math.hypot(x - 8, y - 7) * 0.09;
+});
+draw(document.getElementById("heart"), HEART, function(x, y){ return 4.4 + y * 0.08; });
+
+// печатная машинка
+var TEXT = "Я люблю тебя, Жасмин";
+var el = document.getElementById("msg");
+var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function show(n){ el.innerHTML = TEXT.slice(0, n) + '<span class="cur"></span>'; }
+if (reduce){ show(TEXT.length); }
+else {
+  var i = 0;
+  setTimeout(function tick(){
+    show(i);
+    if (i++ < TEXT.length) setTimeout(tick, 110);
+  }, 2800);
+}
+</script>
+</body>
+</html>
